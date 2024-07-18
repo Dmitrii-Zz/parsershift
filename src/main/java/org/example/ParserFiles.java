@@ -1,11 +1,14 @@
 package org.example;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ParserFiles {
-    private static final String PATH_INPUT_DEFAULT = "./src/main/resources/";
+    private static final String PATH_INPUT_DEFAULT = "./";
+    private final Statistic statistic = new Statistic();
     private boolean isShortStats = false;
     private boolean isFullStats = false;
     private boolean isAddInFile = false;
@@ -13,10 +16,10 @@ public class ParserFiles {
     private boolean isPrefix = false;
     private final List<String> files = new ArrayList<>();
     private String prefix = "";
+    private String pathOutput;
 
-    private String pathOutput = "./src/main/resources/";
 
-    public void cultivationInputArgs(String [] args) {
+    public void cultivationInputArgs(String[] args) {
 
         for (int i = 0; i < args.length; i++) {
 
@@ -29,7 +32,7 @@ public class ParserFiles {
                     }
 
                     isPathOutput = true;
-                    pathOutput = args[i + 1];
+                    pathOutput = args[i + 1] + "/";
                     i++;
                     break;
                 case "-p":
@@ -89,11 +92,18 @@ public class ParserFiles {
             }
         }
 
-        System.out.println(files);
-        System.out.println(prefix);
-        System.out.println(PATH_INPUT_DEFAULT);
+        if (!isPathOutput) {
+            pathOutput = PATH_INPUT_DEFAULT;
+        }
 
+        checkAddDataInFile();
         readFiles();
+
+        if (isShortStats) {
+            statistic.printShortStat();
+        } else {
+            statistic.printFullStat();
+        }
     }
 
     private void readFiles() {
@@ -102,16 +112,42 @@ public class ParserFiles {
         }
     }
 
+    private void checkAddDataInFile() {
+
+        if (isAddInFile) {
+            return;
+        }
+
+        String pathOutFile = pathOutput + prefix;
+        List<String> nameFiles = List.of(pathOutFile + "integers.txt",
+                pathOutFile + "floats.txt", pathOutFile + "strings.txt");
+
+        for (String nameFile : nameFiles) {
+
+            File file = new File(nameFile);
+
+            if (!file.exists()) {
+                continue;
+            }
+
+            try (FileWriter writer = new FileWriter(nameFile)) {
+                writer.write("");
+            } catch (IOException exception) {
+                System.out.println("Ошибка при записи в файл");
+            }
+        }
+    }
+
     private void extractionDataFromFile(String nameFile) {
 
         File file = new File(nameFile);
 
-        try (Reader fileReader = new FileReader(PATH_INPUT_DEFAULT + file)){
+        try (Reader fileReader = new FileReader(PATH_INPUT_DEFAULT + file)) {
 
             BufferedReader br = new BufferedReader(fileReader);
             String line;
 
-            while((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null) {
                 parseLine(line);
             }
 
@@ -122,30 +158,28 @@ public class ParserFiles {
     public void parseLine(String line) {
 
         try {
-            int integer = Integer.parseInt(line);
-            System.out.println("Парсим целое число - " + integer);
+            BigInteger integer = new BigInteger(line);
             String pathOutFile = pathOutput + prefix + "integers.txt";
-
             writeData(String.valueOf(integer), pathOutFile);
+            statistic.statInteger(integer);
             return;
         } catch (NumberFormatException e) {
             System.out.println("Это не целое число!");
         }
 
         try {
-            float aFloat = Float.parseFloat(line);
-            System.out.println("Парсим дробное число- " + aFloat);
+            BigDecimal aFloat = new BigDecimal(line);
             String pathOutFile = pathOutput + prefix + "floats.txt";
-
             writeData(String.valueOf(aFloat), pathOutFile);
+            statistic.statFloat(aFloat);
             return;
         } catch (NumberFormatException e) {
             System.out.println("Это не дробное число число!");
         }
 
-        System.out.println("Осталась строка - " + line);
         String pathOutFile = pathOutput + prefix + "strings.txt";
         writeData(line, pathOutFile);
+        statistic.statString(line);
     }
 
     public void writeData(String data, String pathOutFile) {
@@ -162,21 +196,10 @@ public class ParserFiles {
             System.out.println("При создании файла произошла ошибка - путь не существует или еще что-то там");
         }
 
-        if (!isAddInFile) {
-            try (FileWriter writer = new FileWriter(file);){
-                writer.write("");
-            } catch (IOException exception) {
-                System.out.println("Ошибка при записи в файл");
-            }
-
-            isAddInFile = true;
-        }
-
-        try (FileWriter writer = new FileWriter(file, true);){
+        try (FileWriter writer = new FileWriter(file, true)) {
             writer.write(data + "\r\n");
         } catch (IOException exception) {
             System.out.println("Ошибка при записи в файл");
         }
-
     }
 }
