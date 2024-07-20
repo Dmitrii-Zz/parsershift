@@ -16,7 +16,7 @@ public class ParserFiles {
     private boolean isPrefix = false;
     private final List<String> files = new ArrayList<>();
     private String prefix = "";
-    private String pathOutput;
+    private String pathOutput = PATH_INPUT_DEFAULT;
 
 
     public void cultivationInputArgs(String[] args) {
@@ -33,6 +33,14 @@ public class ParserFiles {
 
                     isPathOutput = true;
                     pathOutput = args[i + 1] + "/";
+
+                    File catalog = new File(pathOutput);
+
+                    if (!catalog.exists()) {
+                        System.out.println("Путь '" + catalog + "' не существует!");
+                        return;
+                    }
+
                     i++;
                     break;
                 case "-p":
@@ -92,10 +100,6 @@ public class ParserFiles {
             }
         }
 
-        if (!isPathOutput) {
-            pathOutput = PATH_INPUT_DEFAULT;
-        }
-
         checkAddDataInFile();
         readFiles();
 
@@ -133,7 +137,7 @@ public class ParserFiles {
             try (FileWriter writer = new FileWriter(nameFile)) {
                 writer.write("");
             } catch (IOException exception) {
-                System.out.println("Ошибка при записи в файл");
+                System.out.println("Ошибка при записи в файл.");
             }
         }
     }
@@ -141,6 +145,10 @@ public class ParserFiles {
     private void extractionDataFromFile(String nameFile) {
 
         File file = new File(nameFile);
+
+        if (!file.exists()) {
+            System.out.println("Указанный файл '" + file + "' не существует!");
+        }
 
         try (Reader fileReader = new FileReader(PATH_INPUT_DEFAULT + file)) {
 
@@ -160,46 +168,52 @@ public class ParserFiles {
         try {
             BigInteger integer = new BigInteger(line);
             String pathOutFile = pathOutput + prefix + "integers.txt";
-            writeData(String.valueOf(integer), pathOutFile);
-            statistic.statInteger(integer);
+
+            if (writeData(String.valueOf(integer), pathOutFile)) {
+                statistic.statInteger(integer);
+            }
+
             return;
-        } catch (NumberFormatException e) {
-            System.out.println("Это не целое число!");
-        }
+        } catch (NumberFormatException ignored) { }
 
         try {
             BigDecimal aFloat = new BigDecimal(line);
             String pathOutFile = pathOutput + prefix + "floats.txt";
-            writeData(String.valueOf(aFloat), pathOutFile);
-            statistic.statFloat(aFloat);
+
+            if (writeData(String.valueOf(aFloat), pathOutFile)) {
+                statistic.statFloat(aFloat);
+            }
+
             return;
-        } catch (NumberFormatException e) {
-            System.out.println("Это не дробное число число!");
+        } catch (NumberFormatException ignored) { }
+
+        if (line.isEmpty()) {
+            return;
         }
 
         String pathOutFile = pathOutput + prefix + "strings.txt";
-        writeData(line, pathOutFile);
-        statistic.statString(line);
+
+        if (writeData(line, pathOutFile)) {
+            statistic.statString(line);
+        }
     }
 
-    public void writeData(String data, String pathOutFile) {
+    public boolean writeData(String data, String pathOutFile) {
 
         File file = new File(pathOutFile);
 
         try {
-            if (file.createNewFile()) {
-                System.out.println("Файл создан");
-            } else {
-                System.out.println("Файл уже существует");
-            }
+            file.createNewFile();
         } catch (IOException exception) {
-            System.out.println("При создании файла произошла ошибка - путь не существует или еще что-то там");
+            System.out.println("При создании файла " + file + " произошла ошибка. Указанный путь не существует!");
         }
 
         try (FileWriter writer = new FileWriter(file, true)) {
             writer.write(data + "\r\n");
+            return true;
         } catch (IOException exception) {
-            System.out.println("Ошибка при записи в файл");
+            System.out.println("Ошибка при записи в файл " + file + ". Файл или путь не существуют!");
+            return false;
         }
     }
 }

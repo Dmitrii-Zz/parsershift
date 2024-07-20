@@ -2,21 +2,25 @@ package org.example;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 public class Statistic {
     private BigInteger countInteger;
-    private BigDecimal countFloat;
-    private int countString = 0;
+    private BigInteger countFloat;
+    private BigInteger countString;
     private BigInteger maxInteger;
     private BigInteger minInteger;
     private BigInteger sumInteger = new BigInteger("0");
     private BigDecimal minFloat;
     private BigDecimal maxFloat;
     private BigDecimal sumFloat = new BigDecimal("0");
-    private int maxString = 0;
-    private int minString = 0;
+    private long maxString = 0;
+    private long minString = 0;
 
     public void statInteger(BigInteger integer) {
+        if (countInteger == null) {
+            countInteger = new BigInteger("0");
+        }
         countInteger = countInteger.add(new BigInteger("1"));
 
         if (maxInteger == null && minInteger == null) {
@@ -40,11 +44,15 @@ public class Statistic {
     }
 
     public void statFloat(BigDecimal aFloat) {
-        countFloat = countFloat.add(new BigDecimal("1"));
+        if (countFloat == null) {
+            countFloat = new BigInteger("0");
+        }
+
+        countFloat = countFloat.add(new BigInteger("1"));
 
         if (maxFloat == null && minFloat == null) {
             maxFloat = aFloat;
-        } else if (minInteger == null) {
+        } else if (minFloat == null) {
             if (aFloat.compareTo(maxFloat) > 0) {
                 minFloat = maxFloat;
                 maxFloat = aFloat;
@@ -63,7 +71,10 @@ public class Statistic {
     }
 
     public void statString(String str) {
-        countString++;
+        if (countString == null) {
+            countString = new BigInteger("0");
+        }
+        countString = countString.add(new BigInteger("1"));
 
         if (maxString < str.length()) {
             maxString = str.length();
@@ -75,38 +86,66 @@ public class Statistic {
     }
 
     public void printShortStat() {
-        System.out.println("Краткая статистика по записанным элементам:\n" +
-                "    Кол-во целых чисел: " + countInteger + ";\n" +
-                "    Кол-во дробных чисел: " + countFloat + ";\n" +
-                "    Кол-во строк: " + countString + ".\n");
+
+        if (countInteger == null && countFloat == null && countString == null) {
+            System.out.println("\nНе было записано ни одного элемента.");
+        } else {
+            System.out.println("\nКраткая статистика по записанным элементам:");
+        }
+
+        if (countInteger != null) {
+            System.out.println("    Кол-во целых чисел: " + countInteger + ".");
+        }
+
+        if (countFloat != null) {
+            System.out.println("    Кол-во дробных чисел: " + countFloat + ".");
+        }
+
+        if (countString != null) {
+            System.out.println("    Кол-во строк: " + countString + ".");
+        }
     }
 
     public void printFullStat() {
 
-        BigInteger averageInteger = new BigInteger("0");
-        BigDecimal averageFloat = new BigDecimal("0");
+        if (countInteger == null && countFloat == null && countString == null) {
+            System.out.println("\nНе было записано ни одного элемента.");
+        } else {
+            System.out.println("\nПолная статистика по записанным элементам:\n");
+        }
 
         if (countInteger != null) {
-            averageInteger = sumInteger.divide(countInteger);
+            System.out.println("    Кол-во целых чисел: " + countInteger + ".\n" +
+                               "        Максимально целое число: " + maxInteger + ".");
+
+            if (minInteger != null) {
+                System.out.println(
+                        "        Минимальное целое число: " + minInteger + ".\n" +
+                        "        Сумма целых чисел: " + sumInteger + ".\n" +
+                        "        Среднее значение целых чисел: " + sumInteger.divide(countInteger) + ".");
+            }
         }
 
         if (countFloat != null) {
-            averageFloat = sumFloat.divide(countFloat, sumFloat.scale(), 1);
+            System.out.println(
+                    "    Кол-во дробных чисел: " + countFloat + ".\n" +
+                    "        Максимально дробное число: " + maxFloat + ".");
+
+            if (minFloat != null) {
+                System.out.println(
+                        "        Минимальное дробное число: " + minFloat + ".\n" +
+                        "        Сумма дробных чисел: " + sumFloat + ".\n" +
+                        "        Среднее значение дробных чисел: "
+                        + sumFloat.divide(new BigDecimal(countFloat), sumFloat.scale(), RoundingMode.DOWN)  + ".");
+            }
         }
 
-        System.out.println("Полная статистика по записанным элементам:\n" +
-                "    Кол-во целых чисел: " + countInteger + ".\n" +
-                "        Минимальное целое число: " + minInteger + ";\n" +
-                "        Максимально целое число: " + maxInteger + ";\n" +
-                "        Сумма целых чисел: " + sumInteger + ";\n" +
-                "        Среднее значение целых чисел: " + averageInteger + ".\n\n" +
-                "    Кол-во дробных чисел: " + countFloat + ".\n" +
-                "        Минимальное дробное число: " + minFloat + ";\n" +
-                "        Максимально дробное число: " + maxFloat + ";\n" +
-                "        Сумма дробных чисел: " + sumFloat + ";\n" +
-                "        Среднее значение дробных чисел: " + averageFloat  + ";\n\n" +
-                "    Кол-во строк: " + countString + ".\n" +
-                "        Длина максимальной строки: " + maxString + ";\n" +
-                "        Длина минимальной строки: " + minString + ".");
+        if (countString != null) {
+            System.out.println("    Кол-во строк: " + countString + ".\n" +
+                               "        Длина максимальной строки: " + maxString + ".");
+            if (minString != 0) {
+                System.out.println("        Длина минимальной строки: " + minString + ".");
+            }
+        }
     }
 }
