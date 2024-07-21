@@ -5,7 +5,10 @@ public class LogicManager {
     private final FileManager fileManager = new FileManager(handlerArgs);
 
     public void start(String[] args) {
-        handlerArgs.cultivationInputArgs(args);
+
+        if (!handlerArgs.cultivationInputArgs(args)) {
+            return;
+        }
 
         fileManager.checkAddDataInFile(handlerArgs.isAddInFile(),
                                        handlerArgs.getPathOutput(),

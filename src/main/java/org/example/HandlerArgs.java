@@ -14,7 +14,7 @@ public class HandlerArgs {
     private String prefix = "";
     private String pathOutput = FileManager.PATH_INPUT_DEFAULT;
 
-    public void cultivationInputArgs(String[] args) {
+    public boolean cultivationInputArgs(String[] args) {
 
         for (int i = 0; i < args.length; i++) {
 
@@ -23,7 +23,7 @@ public class HandlerArgs {
 
                     if (isPathOutput) {
                         System.out.println("Ключ " + args[i] + " уже был!");
-                        return;
+                        return false;
                     }
 
                     isPathOutput = true;
@@ -33,7 +33,7 @@ public class HandlerArgs {
 
                     if (!catalog.exists()) {
                         System.out.println("Путь '" + catalog + "' не существует!");
-                        return;
+                        return false;
                     }
 
                     i++;
@@ -42,7 +42,7 @@ public class HandlerArgs {
 
                     if (isPrefix) {
                         System.out.println("Ключ " + args[i] + " уже был!");
-                        return;
+                        return false;
                     }
 
                     isPrefix = true;
@@ -53,7 +53,7 @@ public class HandlerArgs {
 
                     if (isAddInFile) {
                         System.out.println("Ключ " + args[i] + " уже был!");
-                        return;
+                        return false;
                     }
 
                     isAddInFile = true;
@@ -62,10 +62,10 @@ public class HandlerArgs {
 
                     if (isShortStats) {
                         System.out.println("Ключ " + args[i] + " уже был!");
-                        return;
+                        return false;
                     } else if (isFullStats) {
                         System.out.println("Уже выбрана полная статистика!");
-                        return;
+                        return false;
                     }
 
                     isShortStats = true;
@@ -74,10 +74,10 @@ public class HandlerArgs {
 
                     if (isFullStats) {
                         System.out.println("Ключ " + args[i] + " уже был!");
-                        return;
+                        return false;
                     } else if (isShortStats) {
                         System.out.println("Уже выбрана короткая статистика!");
-                        return;
+                        return false;
                     }
 
                     isFullStats = true;
@@ -88,12 +88,14 @@ public class HandlerArgs {
                         files.add(args[i]);
                     } else {
                         System.out.println("Ошибка ввода параметров: " + args[i]);
-                        return;
+                        return false;
                     }
 
                     break;
             }
         }
+
+        return true;
     }
 
     public List<String> getFiles() {
